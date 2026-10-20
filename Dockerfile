@@ -5,6 +5,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     iptables \
     iproute2 \
+    jq \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Tailscale from official repo
