@@ -15,6 +15,22 @@ mkdir -p /var/run/tailscale "${TS_STATE_DIR}"
 
 echo "Tailscale version: $(tailscale version | head -n1)"
 
+# Exit-node clients' DNS is forwarded to this container's resolvers. Railway's
+# internal resolver (fd12::10) drops a lot of those queries, so use public
+# resolvers instead. Set TS_DNS_SERVERS="" to keep Railway's default.
+TS_DNS_SERVERS="${TS_DNS_SERVERS-1.1.1.1 8.8.8.8 2606:4700:4700::1111}"
+if [ -n "${TS_DNS_SERVERS}" ]; then
+    {
+        for ns in ${TS_DNS_SERVERS}; do echo "nameserver ${ns}"; done
+        echo "options timeout:2 attempts:2 rotate"
+    } > /tmp/resolv.conf
+    if cat /tmp/resolv.conf > /etc/resolv.conf 2>/dev/null; then
+        echo "DNS: using ${TS_DNS_SERVERS}"
+    else
+        echo "WARNING: could not write /etc/resolv.conf; keeping Railway DNS" >&2
+    fi
+fi
+
 # Use userspace networking — Railway containers don't expose /dev/net/tun
 tailscaled \
     --tun=userspace-networking \
