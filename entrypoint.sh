@@ -13,6 +13,8 @@ WATCHDOG_MAX_FAILS="${TS_WATCHDOG_MAX_FAILS:-3}"
 
 mkdir -p /var/run/tailscale "${TS_STATE_DIR}"
 
+echo "Tailscale version: $(tailscale version | head -n1)"
+
 # Use userspace networking — Railway containers don't expose /dev/net/tun
 tailscaled \
     --tun=userspace-networking \
